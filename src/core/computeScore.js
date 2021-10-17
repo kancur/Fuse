@@ -12,7 +12,7 @@ export default function computeScore(
       const weight = key ? key.weight : null
 
       totalScore *= Math.pow(
-        score === 0 && weight ? Number.EPSILON : score,
+        score === 0 && weight ? 0 : score,
         (weight || 1) * (ignoreFieldNorm ? 1 : norm)
       )
     })
