@@ -956,7 +956,7 @@ function computeScore$1(
       const weight = key ? key.weight : null;
 
       totalScore *= Math.pow(
-        score === 0 && weight ? Number.EPSILON : score,
+        score === 0 && weight ? 0 : score,
         (weight || 1) * (ignoreFieldNorm ? 1 : norm)
       );
     });
@@ -1103,7 +1103,8 @@ class Fuse {
       includeScore,
       shouldSort,
       sortFn,
-      ignoreFieldNorm
+      ignoreFieldNorm,
+      findAllMatches
     } = this.options;
 
     let results = isString(query)
@@ -1118,8 +1119,16 @@ class Fuse {
       results.sort(sortFn);
     }
 
-    if (isNumber(limit) && limit > -1) {
-      results = results.slice(0, limit);
+    if (results.length > 1) {
+      if (!findAllMatches) {
+        if (results[0].score === 0) {
+          results = results.filter((result) => result.score === 0);
+        }
+      }
+
+      if (isNumber(limit) && limit > -1) {
+        results = results.slice(0, limit);
+      }
     }
 
     return format(results, this._docs, {

@@ -97,7 +97,7 @@
     "webpack-cli": "^3.3.11"
   },
   "engines": {
-    "node": ">=10"
+    "node": "^14.13.0"
   },
   "dependencies": {}
 }

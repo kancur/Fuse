@@ -9,6 +9,44 @@
 
 'use strict';
 
+function ownKeys(object, enumerableOnly) {
+  var keys = Object.keys(object);
+
+  if (Object.getOwnPropertySymbols) {
+    var symbols = Object.getOwnPropertySymbols(object);
+
+    if (enumerableOnly) {
+      symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      });
+    }
+
+    keys.push.apply(keys, symbols);
+  }
+
+  return keys;
+}
+
+function _objectSpread2(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+
+    if (i % 2) {
+      ownKeys(Object(source), true).forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    } else if (Object.getOwnPropertyDescriptors) {
+      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+    } else {
+      ownKeys(Object(source)).forEach(function (key) {
+        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+      });
+    }
+  }
+
+  return target;
+}
+
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
@@ -62,40 +100,6 @@ function _defineProperty(obj, key, value) {
   return obj;
 }
 
-function ownKeys(object, enumerableOnly) {
-  var keys = Object.keys(object);
-
-  if (Object.getOwnPropertySymbols) {
-    var symbols = Object.getOwnPropertySymbols(object);
-    if (enumerableOnly) symbols = symbols.filter(function (sym) {
-      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-    });
-    keys.push.apply(keys, symbols);
-  }
-
-  return keys;
-}
-
-function _objectSpread2(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-
-    if (i % 2) {
-      ownKeys(Object(source), true).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      });
-    } else if (Object.getOwnPropertyDescriptors) {
-      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-    } else {
-      ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
-    }
-  }
-
-  return target;
-}
-
 function _inherits(subClass, superClass) {
   if (typeof superClass !== "function" && superClass !== null) {
     throw new TypeError("Super expression must either be null or a function");
@@ -133,7 +137,7 @@ function _isNativeReflectConstruct() {
   if (typeof Proxy === "function") return true;
 
   try {
-    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
     return true;
   } catch (e) {
     return false;
@@ -151,6 +155,8 @@ function _assertThisInitialized(self) {
 function _possibleConstructorReturn(self, call) {
   if (call && (typeof call === "object" || typeof call === "function")) {
     return call;
+  } else if (call !== void 0) {
+    throw new TypeError("Derived constructors may only return object or undefined");
   }
 
   return _assertThisInitialized(self);
@@ -184,7 +190,7 @@ function _arrayWithoutHoles(arr) {
 }
 
 function _iterableToArray(iter) {
-  if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
+  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
 }
 
 function _unsupportedIterableToArray(o, minLen) {
@@ -1102,9 +1108,7 @@ var BaseMatch = /*#__PURE__*/function () {
 
   _createClass(BaseMatch, [{
     key: "search",
-    value: function search()
-    /*text*/
-    {}
+    value: function search() {}
   }], [{
     key: "isMultiMatch",
     value: function isMultiMatch(pattern) {
@@ -1811,7 +1815,7 @@ function computeScore$1(results, _ref) {
           norm = _ref2.norm,
           score = _ref2.score;
       var weight = key ? key.weight : null;
-      totalScore *= Math.pow(score === 0 && weight ? Number.EPSILON : score, (weight || 1) * (ignoreFieldNorm ? 1 : norm));
+      totalScore *= Math.pow(score === 0 && weight ? 0 : score, (weight || 1) * (ignoreFieldNorm ? 1 : norm));
     });
     result.score = totalScore;
   });
@@ -1925,10 +1929,7 @@ var Fuse = /*#__PURE__*/function () {
     key: "remove",
     value: function remove() {
       var predicate = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {
-        return (
-          /* doc, idx */
-          false
-        );
+        return false;
       };
       var results = [];
 
@@ -1969,7 +1970,8 @@ var Fuse = /*#__PURE__*/function () {
           includeScore = _this$options.includeScore,
           shouldSort = _this$options.shouldSort,
           sortFn = _this$options.sortFn,
-          ignoreFieldNorm = _this$options.ignoreFieldNorm;
+          ignoreFieldNorm = _this$options.ignoreFieldNorm,
+          findAllMatches = _this$options.findAllMatches;
       var results = isString(query) ? isString(this._docs[0]) ? this._searchStringList(query) : this._searchObjectList(query) : this._searchLogical(query);
       computeScore$1(results, {
         ignoreFieldNorm: ignoreFieldNorm
@@ -1979,8 +1981,18 @@ var Fuse = /*#__PURE__*/function () {
         results.sort(sortFn);
       }
 
-      if (isNumber(limit) && limit > -1) {
-        results = results.slice(0, limit);
+      if (results.length > 1) {
+        if (!findAllMatches) {
+          if (results[0].score === 0) {
+            results = results.filter(function (result) {
+              return result.score === 0;
+            });
+          }
+        }
+
+        if (isNumber(limit) && limit > -1) {
+          results = results.slice(0, limit);
+        }
       }
 
       return format(results, this._docs, {

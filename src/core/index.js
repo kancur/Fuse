@@ -79,7 +79,8 @@ export default class Fuse {
       includeScore,
       shouldSort,
       sortFn,
-      ignoreFieldNorm
+      ignoreFieldNorm,
+      findAllMatches
     } = this.options
 
     let results = isString(query)
@@ -94,8 +95,16 @@ export default class Fuse {
       results.sort(sortFn)
     }
 
-    if (isNumber(limit) && limit > -1) {
-      results = results.slice(0, limit)
+    if (results.length > 1) {
+      if (!findAllMatches) {
+        if (results[0].score === 0) {
+          results = results.filter((result) => result.score === 0)
+        }
+      }
+
+      if (isNumber(limit) && limit > -1) {
+        results = results.slice(0, limit)
+      }
     }
 
     return format(results, this._docs, {
