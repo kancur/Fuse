@@ -80,7 +80,8 @@ export default class Fuse {
       shouldSort,
       sortFn,
       ignoreFieldNorm,
-      findAllMatches
+      findAllMatches,
+      includeRefIndex
     } = this.options
 
     let results = isString(query)
@@ -109,7 +110,8 @@ export default class Fuse {
 
     return format(results, this._docs, {
       includeMatches,
-      includeScore
+      includeScore,
+      includeRefIndex,
     })
   }
 

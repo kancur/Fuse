@@ -350,7 +350,9 @@ var BasicOptions = {
   // Default sort function: sort by ascending score, ascending index
   sortFn: function sortFn(a, b) {
     return a.score === b.score ? a.idx < b.idx ? -1 : 1 : a.score < b.score ? -1 : 1;
-  }
+  },
+  // Whether to include refIndex in the result or not
+  includeRefIndex: false
 };
 var FuzzyOptions = {
   // Approximately where in the text is the pattern expected to be found?
@@ -1174,17 +1176,21 @@ function format(results, docs) {
       _ref$includeMatches = _ref.includeMatches,
       includeMatches = _ref$includeMatches === void 0 ? Config.includeMatches : _ref$includeMatches,
       _ref$includeScore = _ref.includeScore,
-      includeScore = _ref$includeScore === void 0 ? Config.includeScore : _ref$includeScore;
+      includeScore = _ref$includeScore === void 0 ? Config.includeScore : _ref$includeScore,
+      _ref$includeRefIndex = _ref.includeRefIndex,
+      includeRefIndex = _ref$includeRefIndex === void 0 ? Config.includeRefIndex : _ref$includeRefIndex;
 
   var transformers = [];
   if (includeMatches) transformers.push(transformMatches);
   if (includeScore) transformers.push(transformScore);
   return results.map(function (result) {
     var idx = result.idx;
-    var data = {
-      item: docs[idx],
+
+    var data = _objectSpread2({
+      item: docs[idx]
+    }, includeRefIndex && {
       refIndex: idx
-    };
+    });
 
     if (transformers.length) {
       transformers.forEach(function (transformer) {
@@ -1283,7 +1289,8 @@ var Fuse = /*#__PURE__*/function () {
           shouldSort = _this$options.shouldSort,
           sortFn = _this$options.sortFn,
           ignoreFieldNorm = _this$options.ignoreFieldNorm,
-          findAllMatches = _this$options.findAllMatches;
+          findAllMatches = _this$options.findAllMatches,
+          includeRefIndex = _this$options.includeRefIndex;
       var results = isString(query) ? isString(this._docs[0]) ? this._searchStringList(query) : this._searchObjectList(query) : this._searchLogical(query);
       computeScore$1(results, {
         ignoreFieldNorm: ignoreFieldNorm
@@ -1309,7 +1316,8 @@ var Fuse = /*#__PURE__*/function () {
 
       return format(results, this._docs, {
         includeMatches: includeMatches,
-        includeScore: includeScore
+        includeScore: includeScore,
+        includeRefIndex: includeRefIndex
       });
     }
   }, {

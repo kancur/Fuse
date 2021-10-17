@@ -6,7 +6,8 @@ export default function format(
   docs,
   {
     includeMatches = Config.includeMatches,
-    includeScore = Config.includeScore
+    includeScore = Config.includeScore,
+    includeRefIndex = Config.includeRefIndex
   } = {}
 ) {
   const transformers = []
@@ -19,7 +20,7 @@ export default function format(
 
     const data = {
       item: docs[idx],
-      refIndex: idx
+      ...(includeRefIndex && {refIndex: idx})
     }
 
     if (transformers.length) {

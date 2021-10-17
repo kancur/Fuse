@@ -13,6 +13,7 @@ const options = {
   // useExtendedSearch: false,
   // ignoreLocation: false,
   // ignoreFieldNorm: false,
+  includeRefIndex: false,
   keys: ['title']
 }
 

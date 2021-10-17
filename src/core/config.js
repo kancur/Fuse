@@ -24,7 +24,9 @@ export const BasicOptions = {
   shouldSort: true,
   // Default sort function: sort by ascending score, ascending index
   sortFn: (a, b) =>
-    a.score === b.score ? (a.idx < b.idx ? -1 : 1) : a.score < b.score ? -1 : 1
+    a.score === b.score ? (a.idx < b.idx ? -1 : 1) : a.score < b.score ? -1 : 1,
+  // Whether to include refIndex in the result or not
+  includeRefIndex: false,
 }
 
 export const FuzzyOptions = {

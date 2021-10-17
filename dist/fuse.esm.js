@@ -234,7 +234,9 @@ const BasicOptions = {
   shouldSort: true,
   // Default sort function: sort by ascending score, ascending index
   sortFn: (a, b) =>
-    a.score === b.score ? (a.idx < b.idx ? -1 : 1) : a.score < b.score ? -1 : 1
+    a.score === b.score ? (a.idx < b.idx ? -1 : 1) : a.score < b.score ? -1 : 1,
+  // Whether to include refIndex in the result or not
+  includeRefIndex: false,
 };
 
 const FuzzyOptions = {
@@ -1463,7 +1465,8 @@ function format(
   docs,
   {
     includeMatches = Config.includeMatches,
-    includeScore = Config.includeScore
+    includeScore = Config.includeScore,
+    includeRefIndex = Config.includeRefIndex
   } = {}
 ) {
   const transformers = [];
@@ -1476,7 +1479,7 @@ function format(
 
     const data = {
       item: docs[idx],
-      refIndex: idx
+      ...(includeRefIndex && {refIndex: idx})
     };
 
     if (transformers.length) {
@@ -1561,7 +1564,8 @@ class Fuse {
       shouldSort,
       sortFn,
       ignoreFieldNorm,
-      findAllMatches
+      findAllMatches,
+      includeRefIndex
     } = this.options;
 
     let results = isString(query)
@@ -1590,7 +1594,8 @@ class Fuse {
 
     return format(results, this._docs, {
       includeMatches,
-      includeScore
+      includeScore,
+      includeRefIndex,
     })
   }
 
